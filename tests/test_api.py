@@ -16,5 +16,3 @@ def test_health():
     assert response.status_code == 200
     assert "estado" in response.json()
     assert "modelo_disponible" in response.json()
-
-def test_predict_sin_modelo():

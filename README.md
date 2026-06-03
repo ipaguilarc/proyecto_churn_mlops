@@ -4,7 +4,8 @@ Este proyecto corresponde a una práctica inicial del módulo de MLOps.
 
 El objetivo es construir una estructura básica de trabajo para un proyecto de Machine Learning que permita:
 
-- Preparar datos.
+- Preparar datos. 
+    Se cambió tamaño del test
 - Entrenar un modelo.
 - Evaluar métricas.
 - Guardar el modelo entrenado.
@@ -53,3 +54,7 @@ El flujo básico será:
 5. Crear una API básica.
 6. Probar el funcionamiento inicial.
 ## Control de versiones
+
+Este proyecto utiliza Git para registrar cambios y GitHub para respaldar el repositorio en la nube.
+
+El uso de commits permite mantener trazabilidad sobre los cambios realizados en el código, la documentación y la estructura del proyecto.
