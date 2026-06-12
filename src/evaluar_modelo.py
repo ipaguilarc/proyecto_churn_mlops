@@ -3,7 +3,6 @@ from pathlib import Path
 import joblib
 import pandas as pd
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
-from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 DATA_DIR = BASE_DIR / "data"
@@ -12,13 +11,11 @@ DOCS_DIR = BASE_DIR / "docs"
 
 TEST_DATA = DATA_DIR / "test.csv"
 MODEL_FILE = MODELS_DIR / "modelo_churn.pkl"
-MODEL_FILE_LOGREG = MODELS_DIR / "modelo_churn_logreg.pkl"
-MODEL_FILE_RF = MODELS_DIR / "modelo_churn_rf.pkl"
 METRICS_FILE = DOCS_DIR / "metricas_modelo.md"
 
 def evaluar_modelo():
     """
-    Evalúa los modelos entrenados y guarda las métricas principales.
+    Evalúa el modelo entrenado y guarda las métricas principales.
     """
 
     if not TEST_DATA.exists():
@@ -74,6 +71,6 @@ Estas métricas permiten evaluar el desempeño inicial del modelo de clasificaci
     print(f"Métricas guardadas en: {METRICS_FILE}")
 
 if __name__ == "__main__":
-    
-    evaluar_modelo(MODEL_FILE_LOGREG)
-    evaluar_modelo(MODEL_FILE_RF)
+    evaluar_modelo()
+
+   
