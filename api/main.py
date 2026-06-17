@@ -81,6 +81,11 @@ VERSION_MODELO = "modelo_churn_v1"
 # Personalizar obligatoriamente con nombre y apellido.
 AUTOR = "Patricia Aguilar Cabrera"
 
+# Fecha de creación del modelo.
+FECHA_CREACION = "2026-06-10"
+# código en GitHub que identifica la versión del modelo.
+COMMIT_HASH = "12344567abc"
+
 # ============================================================
 # BLOQUE 3. RANGOS HISTÓRICOS DE REFERENCIA
 # ============================================================
@@ -95,8 +100,10 @@ AUTOR = "Patricia Aguilar Cabrera"
 
 RANGOS_HISTORICOS = {
     "antiguedad": (1, 72),
-    "cargo_mensual": (20.0, 150.0),
-    "reclamos": (0, 7),
+    "cargo_mensual": (20.0, 500.0),
+    "reclamos": (0, 20),
+    "saldo_promedio": (100.0, 9000.0),
+    "uso_app": (0, 100),
 }
 
 # ============================================================
@@ -123,7 +130,7 @@ logging.basicConfig(
         # Registra los eventos en:
         # logs/monitor_api.log
 
-        logging.StreamHandler(),
+        # logging.StreamHandler(),
         # Muestra los mismos eventos en la terminal.
     ],
 )
@@ -134,6 +141,7 @@ logger = logging.getLogger("api_churn")
 # ============================================================
 # BLOQUE 5. VERIFICACIÓN Y CARGA DEL MODELO
 # ============================================================
+
 # Antes de iniciar la API, comprobar que el modelo existe.
 if not MODEL_PATH.exists():
     raise RuntimeError(
@@ -198,6 +206,8 @@ class ClienteEntrada(BaseModel):
     antiguedad: int = Field(..., ge=0, le=240)
     cargo_mensual: float = Field(..., ge=0, le=5000)
     reclamos: int = Field(..., ge=0, le=100)
+    uso_app: int = Field(..., ge=0, le=100)
+    saldo_promedio: float = Field(..., ge=100.0, le=9000.0)
 
 class PrediccionSalida(BaseModel):
     """
@@ -242,7 +252,9 @@ def detectar_anomalias(datos: ClienteEntrada) -> list[str]:
         minimo, maximo = RANGOS_HISTORICOS[variable]
 
         # Comprobar si el valor está fuera del rango histórico.
-        if valor < minimo or valor > maximo:
+
+        # Evitar comparar None con números; tratar None como valor anómalo.
+        if valor is None or valor < minimo or valor > maximo:
             alertas.append(
                 f"{variable}={valor} fuera del rango histórico "
                 f"[{minimo}, {maximo}]"
@@ -260,7 +272,7 @@ def detectar_anomalias(datos: ClienteEntrada) -> list[str]:
 
 def resumen_metricas() -> dict:
     """
-Devuelve una copia segura y legible de las métricas acumuladas.
+    Devuelve una copia segura y legible de las métricas acumuladas.
 
     La función utiliza metricas_lock para evitar que los valores sean
     modificados mientras se construye la respuesta.
@@ -302,11 +314,11 @@ Devuelve una copia segura y legible de las métricas acumuladas.
 # ============================================================
 # BLOQUE 10. CREACIÓN DE LA APLICACIÓN FASTAPI
 # ============================================================
+
 app = FastAPI(
     title="API de predicción de churn con monitoreo básico",
     description="Servicio académico ML-Ops con métricas y logs.",
-    version="2.0.0",
-)
+    version= "2.1.1")
 
 # ============================================================
 # BLOQUE 11. MIDDLEWARE PARA MEDIR LATENCIA Y CONTAR SOLICITUDES
@@ -430,6 +442,7 @@ def inicio() -> dict[str, str]:
     """
     Confirma que el servicio está activo.
     """
+
     return {
         "mensaje": "Servicio ML-Ops activo",
         "estado": "ok",
@@ -450,6 +463,22 @@ def health() -> dict[str, str]:
         "estado": "ok",
         "modelo": VERSION_MODELO,
         "monitoreo": "activo",
+    }
+
+# ============================================================
+# ENDPOINT GET /model-version
+# ============================================================
+
+@app.get("/model-version")
+def model_version() -> dict[str, str]:
+    """
+    Devuelve la información de la versión del modelo en uso.
+    """
+    return {
+        "Version modelo": VERSION_MODELO,
+        "autor": AUTOR,
+        "fecha_creacion": FECHA_CREACION,
+        "commit_hash": COMMIT_HASH,
     }
 
 # ============================================================
@@ -547,7 +576,6 @@ def predict(datos: ClienteEntrada) -> PrediccionSalida:
             autor=AUTOR,
             alertas_datos=alertas,
         )
-
     except Exception as exc:
         # Incrementar el contador si ocurre un error durante la inferencia.
         with metricas_lock:

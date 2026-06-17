@@ -10,6 +10,7 @@ Objetivos:
 3. Enviar una solicitud inválida para comprobar el error HTTP 422.
 4. Mostrar la latencia informada por el middleware de la API.
 5. Consultar el resumen acumulado mediante el endpoint GET /metrics.
+
 Importante:
 - La API debe estar activa antes de ejecutar este archivo.
 - Este script no entrena el modelo.
